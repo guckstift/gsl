@@ -10,3 +10,5 @@ struct gstring {
 gstring* gstringNew (guint length);
 gstring* gstringFromCstr (const char* cstr);
 gstring* gstringConcat (gstring* first, gstring* second);
+guint gstringHash (gstring* src);
+gbool gstringEqual (gstring* first, gstring* second);

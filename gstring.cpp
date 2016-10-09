@@ -40,3 +40,28 @@ gstring* gstringConcat (gstring* first, gstring* second)
 	
 	return res;
 }
+
+guint gstringHash (gstring* src)
+{
+	guint res, i;
+	
+	for (res = 0, i = 0; i < src->length; i ++)
+		res += src->chars[i];
+	
+	return res;
+}
+
+gbool gstringEqual (gstring* first, gstring* second)
+{
+	guint i;
+	
+	if (first->length != second->length)
+		return false;
+	
+	for (i = 0; i < first->length; i ++) {
+		if (first->chars[i] != second->chars[i])
+			return false;
+	}
+	
+	return true;
+}
