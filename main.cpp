@@ -19,10 +19,6 @@ int main (int argc, char** argv)
 	printf("%i\n", b.chars[0]);
 	*/
 	
-	for (int i=0; i < 32; i++)
-		printf("%lu -> %lu\n", i, gtableAdjustSize(0, i));
-		//printf("%lu -> %lu\n", i, nextPowerOf2(i) * 3 / 4);
-	
 	hello = gstringFromCstr ("0");
 	printf("Hash: %lu\n", gstringHash (hello));
 	hello = gstringFromCstr ("z");
