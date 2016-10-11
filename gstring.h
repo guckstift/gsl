@@ -12,3 +12,4 @@ gstring* gstringFromCstr (const char* cstr);
 gstring* gstringConcat (gstring* first, gstring* second);
 guint gstringHash (gstring* src);
 gbool gstringEqual (gstring* first, gstring* second);
+void gstringPrint (gstring* src);

@@ -1,35 +1,30 @@
 #include <stdio.h>
-#include "types.h"
-#include "gstring.h"
 #include "gtable.h"
-#include "math.h"
-
-gstring a;
+#include "print.h"
 
 int main (int argc, char** argv)
 {
-	gstring b;
-	gstring *hello;
+	gtable* table;
+	gstring* stringVarName;
+	gstring* stringVarValue;
+	gstring* stringRes;
+	gstring* intVarName;
+	gint intRes;
 	
-	/*
-	printf("%lu\n", sizeof (a));
-	printf("%lu\n", sizeof (b));
-	printf("%lu\n", sizeof (gstring));
-	printf("%i\n", a.chars[0]);
-	printf("%i\n", b.chars[0]);
-	*/
+	table = gtableNew ();
 	
-	hello = gstringFromCstr ("0");
-	printf("Hash: %lu\n", gstringHash (hello));
-	hello = gstringFromCstr ("z");
-	printf("Hash: %lu\n", gstringHash (hello));
-	hello = gstringFromCstr ("zz");
-	printf("Hash: %lu\n", gstringHash (hello));
-	hello = gstringFromCstr ("zzz");
-	printf("Hash: %lu\n", gstringHash (hello));
+	stringVarName = gstringFromCstr ("stringVar");
+	stringVarValue = gstringFromCstr ("value");
+	gtableSetValue (table, stringVarName, stringVarValue);
+	stringRes = (gstring*)gtableGetValue (table, stringVarName);
 	
-	//printf("%lu\n", hello->length);
-	//printf("%c\n", hello->chars[11]);
+	gstringPrint (stringRes); printNl ();
+	
+	intVarName = gstringFromCstr ("intVar");
+	gtableSetValue (table, intVarName, (void*)+666);
+	intRes = (gint)gtableGetValue (table, intVarName);
+	
+	printSlDec (intRes); printNl ();
 	
 	return 0;
 }

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "gstring.h"
 #include "memory.h"
 
@@ -64,4 +65,10 @@ gbool gstringEqual (gstring* first, gstring* second)
 	}
 	
 	return true;
+
+}
+
+void gstringPrint (gstring* src)
+{
+	fwrite (src->chars, sizeof (gchar), src->length, stdout);
 }

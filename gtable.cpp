@@ -3,6 +3,8 @@
 #include "memory.h"
 #include "math.h"
 
+/* private */
+
 static void _initEntry (gentry* entry)
 {
 	entry->hash = 0;
@@ -22,26 +24,6 @@ static void _setEntry (gentry* entry, guint hash, gstring* name, void* value)
 	entry->hash = hash;
 	entry->name = name;
 	entry->value = value;
-}
-
-static guint _probeSeq (guint hash, guint capacity, guint pos)
-{
-	return (hash + (pos + pos * pos) / 2) % capacity;
-}
-
-static guint _correctPos (gtable* table, guint oldIndex)
-{
-	guint hash, capacity, newIndex, i;
-	
-	hash = table->entries[oldIndex].hash;
-	capacity = table->capacity;
-	newIndex = _probeSeq (hash, capacity, 0);
-	
-	for (i = 0; i < capacity && newIndex != oldIndex && table->entries[newIndex].name; i ++) {
-		newIndex = _probeSeq (hash, capacity, i);
-	}
-	
-	return newIndex;
 }
 
 static void _reposition (gtable* table, guint oldIndex)
@@ -91,7 +73,29 @@ static guint _shrink (gtable* table, guint mag)
 	table->entries = GRENEWC (gentry, table->entries, newCapacity);
 }
 
-static gbool _lookupHash (gtable* table, gstring* name, guint hash, guint* index)
+/* internal */
+
+guint _probeSeq (guint hash, guint capacity, guint pos)
+{
+	return (hash + (pos + pos * pos) / 2) % capacity;
+}
+
+guint _correctPos (gtable* table, guint oldIndex)
+{
+	guint hash, capacity, newIndex, i;
+	
+	hash = table->entries[oldIndex].hash;
+	capacity = table->capacity;
+	newIndex = _probeSeq (hash, capacity, 0);
+	
+	for (i = 0; i < capacity && newIndex != oldIndex && table->entries[newIndex].name; i ++) {
+		newIndex = _probeSeq (hash, capacity, i);
+	}
+	
+	return newIndex;
+}
+
+gbool _lookupHash (gtable* table, gstring* name, guint hash, guint* index)
 {
 	guint _index, capacity, i;
 	
@@ -116,12 +120,12 @@ static gbool _lookupHash (gtable* table, gstring* name, guint hash, guint* index
 	return false;
 }
 
-static gbool _lookup (gtable* table, gstring* name, guint* index)
+gbool _lookup (gtable* table, gstring* name, guint* index)
 {
 	return _lookupHash (table, name, gstringHash (name), index);
 }
 
-static guint _neededCapacity (guint usage)
+guint _neededCapacity (guint usage)
 {
 	guint capacity;
 	
@@ -138,7 +142,7 @@ static guint _neededCapacity (guint usage)
 	return capacity;
 }
 
-static gbool _findFreePos (gtable* table, guint hash, guint* index)
+gbool _findFreePos (gtable* table, guint hash, guint* index)
 {
 	guint _index, i;
 	
@@ -157,6 +161,8 @@ static gbool _findFreePos (gtable* table, guint hash, guint* index)
 	return false;
 }
 
+/* public */
+
 gtable* gtableNew ()
 {
 	gtable* res;
@@ -170,6 +176,8 @@ gtable* gtableNew ()
 	for (i = 0; i < res->capacity; i ++) {
 		_initEntry (&res->entries[i]);
 	}
+	
+	return res;
 }
 
 void gtableSetValue (gtable* table, gstring* name, void* value)
