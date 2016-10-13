@@ -6,6 +6,5 @@ void* gmalloc (guint size);
 void gfree (void* ptr);
 void* grealloc (void* ptr, guint size);
 
-#define GNEW(T) ((T*)gmalloc (sizeof (T)))
-#define GNEWC(T,C) ((T*)gmalloc ((C) * sizeof (T)))
-#define GRENEWC(T,P,C) ((T*)grealloc ((P), (C) * sizeof (T)))
+#define gnew(T,C) ((T*)gmalloc ((C) * sizeof (T)))
+#define gresize(P,T,C) ((P) = (T*)grealloc ((P), (C) * sizeof (T)))

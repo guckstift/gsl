@@ -1,7 +1,9 @@
 #include <string.h>
+#include <stdio.h>
 #include "gtable.h"
 #include "memory.h"
 #include "math.h"
+#include "print.h"
 
 /* private */
 
@@ -30,7 +32,7 @@ static void _reposition (gtable* table, guint oldIndex)
 {
 	guint newIndex;
 	
-	newIndex = _correctPos (table, oldIndex);
+	newIndex = _gtableCorrectPos (table, oldIndex);
 	
 	if (newIndex != oldIndex) {
 		_copyEntry (&table->entries[newIndex], &table->entries[oldIndex]);
@@ -43,10 +45,8 @@ static guint _expand (gtable* table, guint mag)
 	guint oldCapacity, newCapacity, i;
 	
 	oldCapacity = table->capacity;
-	newCapacity = table->capacity << mag;
-	
-	table->entries = GRENEWC (gentry, table->entries, newCapacity);
-	table->capacity = newCapacity;
+	table->capacity = oldCapacity << mag;
+	gresize (table->entries, gentry, table->capacity);
 	
 	for (i = 0; i < oldCapacity; i ++) {
 		if (table->entries[i].name) {
@@ -70,32 +70,32 @@ static guint _shrink (gtable* table, guint mag)
 		}
 	}
 	
-	table->entries = GRENEWC (gentry, table->entries, newCapacity);
+	gresize (table->entries, gentry, newCapacity);
 }
 
 /* internal */
 
-guint _probeSeq (guint hash, guint capacity, guint pos)
+guint _gtableProbeSeq (guint hash, guint capacity, guint pos)
 {
 	return (hash + (pos + pos * pos) / 2) % capacity;
 }
 
-guint _correctPos (gtable* table, guint oldIndex)
+guint _gtableCorrectPos (gtable* table, guint oldIndex)
 {
 	guint hash, capacity, newIndex, i;
 	
 	hash = table->entries[oldIndex].hash;
 	capacity = table->capacity;
-	newIndex = _probeSeq (hash, capacity, 0);
+	newIndex = _gtableProbeSeq (hash, capacity, 0);
 	
 	for (i = 0; i < capacity && newIndex != oldIndex && table->entries[newIndex].name; i ++) {
-		newIndex = _probeSeq (hash, capacity, i);
+		newIndex = _gtableProbeSeq (hash, capacity, i);
 	}
 	
 	return newIndex;
 }
 
-gbool _lookupHash (gtable* table, gstring* name, guint hash, guint* index)
+gbool _gtableLookupHash (gtable* table, gstring* name, guint hash, guint* index)
 {
 	guint _index, capacity, i;
 	
@@ -104,7 +104,7 @@ gbool _lookupHash (gtable* table, gstring* name, guint hash, guint* index)
 	}
 	
 	capacity = table->capacity;
-	*index = _probeSeq (hash, capacity, 0);
+	*index = _gtableProbeSeq (hash, capacity, 0);
 	
 	for (i = 0; i < capacity; i ++) {
 		if (table->entries[*index].name == 0) {
@@ -114,18 +114,18 @@ gbool _lookupHash (gtable* table, gstring* name, guint hash, guint* index)
 			return true;
 		}
 		
-		*index = _probeSeq (hash, capacity, i);
+		*index = _gtableProbeSeq (hash, capacity, i);
 	}
 	
 	return false;
 }
 
-gbool _lookup (gtable* table, gstring* name, guint* index)
+gbool _gtableLookup (gtable* table, gstring* name, guint* index)
 {
-	return _lookupHash (table, name, gstringHash (name), index);
+	return _gtableLookupHash (table, name, gstringHash (name), index);
 }
 
-guint _neededCapacity (guint usage)
+guint _gtableNeededCapacity (guint usage)
 {
 	guint capacity;
 	
@@ -142,7 +142,7 @@ guint _neededCapacity (guint usage)
 	return capacity;
 }
 
-gbool _findFreePos (gtable* table, guint hash, guint* index)
+gbool _gtableFindFreePos (gtable* table, guint hash, guint* index)
 {
 	guint _index, i;
 	
@@ -151,7 +151,7 @@ gbool _findFreePos (gtable* table, guint hash, guint* index)
 	}
 	
 	for (i = 0; i < table->capacity; i ++) {
-		*index = _probeSeq (hash, table->capacity, i);
+		*index = _gtableProbeSeq (hash, table->capacity, i);
 		
 		if (table->entries[*index].name == 0) {
 			return true;
@@ -168,10 +168,10 @@ gtable* gtableNew ()
 	gtable* res;
 	guint i;
 	
-	res = GNEW (gtable);
+	res = gnew (gtable, 1);
 	res->capacity = 4;
 	res->usage = 0;
-	res->entries = GNEWC (gentry, res->capacity);
+	res->entries = gnew (gentry, res->capacity);
 	
 	for (i = 0; i < res->capacity; i ++) {
 		_initEntry (&res->entries[i]);
@@ -186,15 +186,19 @@ void gtableSetValue (gtable* table, gstring* name, void* value)
 	
 	hash = gstringHash (name);
 	
-	if (_lookupHash (table, name, hash, &index) == false) {
-		if (_neededCapacity (table->usage + 1) > table->capacity) {
+	if (_gtableLookupHash (table, name, hash, &index) == false) {
+		if (_gtableNeededCapacity (table->usage + 1) > table->capacity) {
 			_expand (table, 1);
 		}
 		
-		_findFreePos (table, hash, &index);
+		_gtableFindFreePos (table, hash, &index);
+		table->usage ++;
 	}
 	
 	_setEntry (&table->entries[index], hash, name, value);
+	
+	printf("index: ");printUlDec(index); printNl();
+	printf("usage: ");printUlDec(table->usage); printNl();
 }
 
 void* gtableGetValue (gtable* table, gstring* name)
@@ -203,7 +207,7 @@ void* gtableGetValue (gtable* table, gstring* name)
 	
 	hash = gstringHash (name);
 	
-	if (_lookupHash (table, name, hash, &index)) {
+	if (_gtableLookupHash (table, name, hash, &index)) {
 		return table->entries[index].value;
 	}
 
