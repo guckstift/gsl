@@ -4,20 +4,24 @@
 
 void printTableInfo (gtable* table)
 {
-	printf ("Abruf\n");
+	printf ("===================\n--- Abruf\n");
 	
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("null"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("eins"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("zwei"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("drei"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("vier"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("fuenf"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("sechs"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("sieben"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("acht"))); printNl ();
-	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("neun"))); printNl ();
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("null"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("eins"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("zwei"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("drei"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("vier"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("fuenf"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("sechs"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("sieben"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("acht"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("neun"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("zehn"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("elf"))); printf(" ");
+	printUlDec((guint)gtableGetValue (table, gstringFromCstr ("zwoelf"))); printf(" ");
+	printNl ();
 	
-	printf ("Hashtable (%lu/%lu)\n", table->usage, table->capacity);
+	printf ("--- Hashtable (%lu/%lu)\n", table->usage, table->capacity);
 	for (int i=0; i<table->capacity; i++) {
 		printf("#%i : H = %lu ", i, table->entries[i].hash);
 		
@@ -32,17 +36,19 @@ void printTableInfo (gtable* table)
 	
 	garray* keys = gtableGetKeys (table);
 	
-	printf ("Key-Array\n");
+	printf ("\n--- Key-Array\n");
 	for (int i=0; i<keys->usage; i++) {
-		gstringPrint ((gstring*)keys->items[i]); printNl();
+		gstringPrint ((gstring*)keys->items[i]); printf(" ");
 	}
 	
 	garray* vals = gtableGetValues (table);
 	
-	printf ("Value-Array\n");
+	printf ("\n--- Value-Array\n");
 	for (int i=0; i<vals->usage; i++) {
-		printf("%lu\n", (guint)vals->items[i]);
+		printf("%lu ", (guint)vals->items[i]);
 	}
+	
+	printNl ();
 }
 
 int main (int argc, char** argv)
@@ -61,17 +67,35 @@ int main (int argc, char** argv)
 	gtable* table;
 	
 	table = gtableNew ();
-	gtableSetValue (table, gstringFromCstr ("null"), (void*)0);
-	gtableSetValue (table, gstringFromCstr ("eins"), (void*)1);
-	gtableSetValue (table, gstringFromCstr ("zwei"), (void*)2);
-	gtableSetValue (table, gstringFromCstr ("drei"), (void*)3);
-	gtableSetValue (table, gstringFromCstr ("vier"), (void*)4);
-	gtableSetValue (table, gstringFromCstr ("fuenf"), (void*)5);
-	gtableSetValue (table, gstringFromCstr ("sechs"), (void*)6);
-	gtableSetValue (table, gstringFromCstr ("sieben"), (void*)7);
-	gtableSetValue (table, gstringFromCstr ("acht"), (void*)8);
-	gtableSetValue (table, gstringFromCstr ("neun"), (void*)9);
 	
+	gtableSetValue (table, gstringFromCstr ("null"), (void*)0);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("eins"), (void*)1);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("zwei"), (void*)2);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("drei"), (void*)3);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("vier"), (void*)4);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("fuenf"), (void*)5);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("sechs"), (void*)6);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("sieben"), (void*)7);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("acht"), (void*)8);
+	printTableInfo (table);
+	
+	gtableSetValue (table, gstringFromCstr ("neun"), (void*)9);
 	printTableInfo (table);
 	
 	gtableSetValue (table, gstringFromCstr ("zehn"), (void*)10);

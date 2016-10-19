@@ -47,7 +47,7 @@ guint gstringHash (gstring* src)
 	guint res, i;
 
 	for (res = 0, i = 0; i < src->length; i ++)
-		res += src->chars[i];
+		res += src->chars[i] * (i + 1);
 
 	return res;
 }
@@ -57,15 +57,29 @@ gbool gstringEqual (gstring* first, gstring* second)
 	guint i;
 
 	if (first->length != second->length)
-		return false;
-
-	for (i = 0; i < first->length; i ++) {
-		if (first->chars[i] != second->chars[i])
-			return false;
+		return gfalse;
+	
+	for (i = 0; i + 7 < first->length; i += 8) {
+		if (*(guint*)&first->chars[i] != *(guint*)&second->chars[i])
+			return gfalse;
 	}
 
-	return true;
+	for (; i + 3 < first->length; i += 4) {
+		if (*(guint32*)&first->chars[i] != *(guint32*)&second->chars[i])
+			return gfalse;
+	}
 
+	for (; i + 1 < first->length; i += 2) {
+		if (*(guint16*)&first->chars[i] != *(guint16*)&second->chars[i])
+			return gfalse;
+	}
+
+	for (; i < first->length; i ++) {
+		if (first->chars[i] != second->chars[i])
+			return gfalse;
+	}
+
+	return gtrue;
 }
 
 void gstringPrint (gstring* src)

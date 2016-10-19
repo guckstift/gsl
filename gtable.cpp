@@ -91,7 +91,7 @@ guint _gtableCorrectPos (gtable* table, guint oldIndex)
 {
 	guint hash, capacity, newIndex, i;
 	
-	hash = table->entries[oldIndex].hash;
+	hash     = table->entries[oldIndex].hash;
 	capacity = table->capacity;
 	newIndex = _gtableProbeSeq (hash, capacity, 0);
 	
@@ -117,17 +117,14 @@ gbool _gtableLookupHash (gtable* table, gstring* name, guint hash, guint* index)
 	*index = _gtableProbeSeq (hash, capacity, 0);
 	
 	for (i = 0; i < capacity; i ++) {
-		if (table->entries[*index].name == 0) {
-			return false;
-		}
-		else if (gstringEqual (name, table->entries[*index].name)) {
-			return true;
+		if (table->entries[*index].hash == hash && gstringEqual (name, table->entries[*index].name)) {
+			return gtrue;
 		}
 		
 		*index = _gtableProbeSeq (hash, capacity, i);
 	}
 	
-	return false;
+	return gfalse;
 }
 
 /*
@@ -180,11 +177,11 @@ gbool _gtableFindFreePos (gtable* table, guint hash, guint* index)
 		*index = _gtableProbeSeq (hash, table->capacity, i);
 		
 		if (table->entries[*index].name == 0) {
-			return true;
+			return gtrue;
 		}
 	}
 	
-	return false;
+	return gfalse;
 }
 
 /* public */
@@ -212,7 +209,7 @@ void gtableSetValue (gtable* table, gstring* name, void* value)
 	
 	hash = gstringHash (name);
 	
-	if (_gtableLookupHash (table, name, hash, &index) == false) {
+	if (_gtableLookupHash (table, name, hash, &index) == gfalse) {
 		neededCapacity = _gtableNeededCapacity (table->usage + 1, table->capacity);
 		
 		if (neededCapacity != table->capacity) {
