@@ -2,47 +2,13 @@
 #include "memory.h"
 #include "math.h"
 
-/* private */
-
-/*
-	Resize the array to newCapacity
-* /
-static guint _resize (gtable* table, guint newCapacity)
-{
-	guint i, oldCapacity;
-	
-	oldCapacity     = table->capacity;
-	table->capacity = newCapacity;
-	
-	if (newCapacity > oldCapacity) {
-		gresize (table->entries, gentry, table->capacity);
-	
-		for (i = 0; i < oldCapacity; i ++) {
-			if (table->entries[i].name) {
-				_reposition (table, i);
-			}
-		}
-	}
-	else if (newCapacity < oldCapacity) {
-		table->capacity = newCapacity;
-	
-		for (i = 0; i < oldCapacity; i ++) {
-			if (table->entries[i].name) {
-				_reposition (table, i);
-			}
-		}
-		
-		gresize (table->entries, gentry, table->capacity);
-	}
-}*/
-
-/* internal */
+/* internals */
 
 /*
 	Give the minimum needed capacity for an array with a specific usage and a current capacity
 	curCapacity that can be achieved with the growth factor.
 */
-guint _garrayNeededCapacity (guint usage, guint curCapacity)
+guint garrayNeededCapacity (guint usage, guint curCapacity)
 {
 	guint expandCapacity, shrinkCapacity, maxUsage, minUsage;
 	
@@ -55,10 +21,10 @@ guint _garrayNeededCapacity (guint usage, guint curCapacity)
 	minUsage = shrinkCapacity * GARRAY_MAX_USAGE_N / GARRAY_MAX_USAGE_D;
 	
 	if (usage > maxUsage) {
-		return _garrayNeededCapacity (usage, expandCapacity);
+		return garrayNeededCapacity (usage, expandCapacity);
 	}
 	else if (usage < minUsage) {
-		return _garrayNeededCapacity (usage, shrinkCapacity);
+		return garrayNeededCapacity (usage, shrinkCapacity);
 	}
 	else {
 		return MAX (GARRAY_MIN_CAPACITY, curCapacity);
@@ -90,7 +56,7 @@ void garrayAppend (garray* array, void* item)
 	guint neededCapacity, oldCapacity;
 	
 	oldCapacity    = array->capacity;
-	neededCapacity = _garrayNeededCapacity (array->usage + 1, oldCapacity);
+	neededCapacity = garrayNeededCapacity (array->usage + 1, oldCapacity);
 	
 	if (oldCapacity < neededCapacity) {
 		array->capacity = neededCapacity;

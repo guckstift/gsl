@@ -16,4 +16,5 @@ struct garray {
 
 garray* garrayNew ();
 void garrayAppend (garray* array, void* item);
-guint _garrayNeededCapacity (guint usage, guint curCapacity);
+/* internals */
+guint garrayNeededCapacity (guint usage, guint curCapacity);

@@ -23,13 +23,17 @@ struct gtable {
 };
 
 gtable* gtableNew ();
+void gtableInit (gtable* table);
 void gtableSetValue (gtable* table, gstring* name, void* value);
 void* gtableGetValue (gtable* table, gstring* name);
 garray* gtableGetKeys (gtable* table);
 garray* gtableGetValues (gtable* table);
-guint _gtableProbeSeq (guint hash, guint capacity, guint pos);
-guint _gtableCorrectPos (gtable* table, guint oldIndex);
-gbool _gtableLookupHash (gtable* table, gstring* name, guint hash, guint* index);
-gbool _gtableLookup (gtable* table, gstring* name, guint* index);
-guint _gtableNeededCapacity (guint capacity, guint usage);
-gbool _gtableFindFreePos (gtable* table, guint hash, guint* index);
+/* internals */
+guint gtableProbeSeq (guint hash, guint capacity, guint pos);
+guint gtableCorrectPos (gtable* table, guint oldIndex);
+gbool gtableLookupHash (gtable* table, gstring* name, guint hash, guint* index);
+gbool gtableLookup (gtable* table, gstring* name, guint* index);
+guint gtableNeededCapacity (guint capacity, guint usage);
+gbool gtableFindFreePos (gtable* table, guint hash, guint* index);
+void gtableDemo ();
+void gtablePrintInfo (gtable* table);
