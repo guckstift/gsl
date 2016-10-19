@@ -3,7 +3,6 @@
 #include "gtable.h"
 #include "memory.h"
 #include "math.h"
-#include "print.h"
 
 /* private */
 
@@ -28,6 +27,9 @@ static void _setEntry (gentry* entry, guint hash, gstring* name, void* value)
 	entry->value = value;
 }
 
+/*
+	Reposition a table entry located at oldIndex to its appropriate position in the table
+*/
 static void _reposition (gtable* table, guint oldIndex)
 {
 	guint newIndex;
@@ -40,46 +42,51 @@ static void _reposition (gtable* table, guint oldIndex)
 	}
 }
 
-static guint _expand (gtable* table, guint mag)
+/*
+	Resize the table to newCapacity and reposition each entry
+*/
+static guint _resize (gtable* table, guint newCapacity)
 {
-	guint oldCapacity, newCapacity, i;
+	guint i, oldCapacity;
 	
-	oldCapacity = table->capacity;
-	table->capacity = oldCapacity << mag;
-	gresize (table->entries, gentry, table->capacity);
-	
-	for (i = 0; i < oldCapacity; i ++) {
-		if (table->entries[i].name) {
-			_reposition (table, i);
-		}
-	}
-}
-
-static guint _shrink (gtable* table, guint mag)
-{
-	guint oldCapacity, newCapacity, i;
-	
-	oldCapacity = table->capacity;
-	newCapacity = table->capacity >> mag;
-	newCapacity = newCapacity < 4 ? 4 : newCapacity;
+	oldCapacity     = table->capacity;
 	table->capacity = newCapacity;
 	
-	for (i = newCapacity; i < oldCapacity; i ++) {
-		if (table->entries[i].name) {
-			_reposition (table, i);
+	if (newCapacity > oldCapacity) {
+		gresize (table->entries, gentry, table->capacity);
+	
+		for (i = 0; i < oldCapacity; i ++) {
+			if (table->entries[i].name) {
+				_reposition (table, i);
+			}
 		}
 	}
+	else if (newCapacity < oldCapacity) {
+		table->capacity = newCapacity;
 	
-	gresize (table->entries, gentry, newCapacity);
+		for (i = 0; i < oldCapacity; i ++) {
+			if (table->entries[i].name) {
+				_reposition (table, i);
+			}
+		}
+		
+		gresize (table->entries, gentry, table->capacity);
+	}
 }
 
 /* internal */
 
-guint _gtableProbeSeq (guint hash, guint capacity, guint pos)
+/*
+	Give the nth probe position for a specific hash value in a table with a specific capacity
+*/
+guint _gtableProbeSeq (guint hash, guint capacity, guint n)
 {
-	return (hash + (pos + pos * pos) / 2) % capacity;
+	return (hash + (n + n * n) / 2) % capacity;
 }
 
+/*
+	Give the appropriate position for an entry located at oldIndex
+*/
 guint _gtableCorrectPos (gtable* table, guint oldIndex)
 {
 	guint hash, capacity, newIndex, i;
@@ -95,6 +102,9 @@ guint _gtableCorrectPos (gtable* table, guint oldIndex)
 	return newIndex;
 }
 
+/*
+	Lookup an entry in the table with its hash precalculated
+*/
 gbool _gtableLookupHash (gtable* table, gstring* name, guint hash, guint* index)
 {
 	guint _index, capacity, i;
@@ -120,28 +130,44 @@ gbool _gtableLookupHash (gtable* table, gstring* name, guint hash, guint* index)
 	return false;
 }
 
+/*
+	Lookup an entry in the table
+*/
 gbool _gtableLookup (gtable* table, gstring* name, guint* index)
 {
 	return _gtableLookupHash (table, name, gstringHash (name), index);
 }
 
-guint _gtableNeededCapacity (guint usage)
+/*
+	Give the minimum needed capacity for a table with a specific usage and a current capacity
+	curCapacity that can be achieved with the growth factor.
+*/
+guint _gtableNeededCapacity (guint usage, guint curCapacity)
 {
-	guint capacity;
+	guint expandCapacity, shrinkCapacity, maxUsage, minUsage;
 	
-	capacity = nextPowerOf2 (usage);
+	expandCapacity = curCapacity * GTABLE_GROWTH_FACTOR_N / GTABLE_GROWTH_FACTOR_D;
+	shrinkCapacity = curCapacity * GTABLE_GROWTH_FACTOR_D / GTABLE_GROWTH_FACTOR_N;
 	
-	if (usage >= capacity * 3 / 4) {
-		capacity <<= 1;
+	if (expandCapacity == curCapacity) expandCapacity ++;
+	
+	maxUsage = curCapacity * GTABLE_MAX_USAGE_N / GTABLE_MAX_USAGE_D;
+	minUsage = shrinkCapacity * GTABLE_MAX_USAGE_N / GTABLE_MAX_USAGE_D;
+	
+	if (usage > maxUsage) {
+		return _gtableNeededCapacity (usage, expandCapacity);
 	}
-	
-	if (capacity < 4) {
-		capacity = 4;
+	else if (usage < minUsage) {
+		return _gtableNeededCapacity (usage, shrinkCapacity);
 	}
-	
-	return capacity;
+	else {
+		return MAX (GTABLE_MIN_CAPACITY, curCapacity);
+	}
 }
 
+/*
+	Probe a free position for a hash to be placed in the table
+*/
 gbool _gtableFindFreePos (gtable* table, guint hash, guint* index)
 {
 	guint _index, i;
@@ -169,7 +195,7 @@ gtable* gtableNew ()
 	guint i;
 	
 	res = gnew (gtable, 1);
-	res->capacity = 4;
+	res->capacity = GTABLE_MIN_CAPACITY;
 	res->usage = 0;
 	res->entries = gnew (gentry, res->capacity);
 	
@@ -182,13 +208,15 @@ gtable* gtableNew ()
 
 void gtableSetValue (gtable* table, gstring* name, void* value)
 {
-	guint hash, index;
+	guint hash, index, neededCapacity;
 	
 	hash = gstringHash (name);
 	
 	if (_gtableLookupHash (table, name, hash, &index) == false) {
-		if (_gtableNeededCapacity (table->usage + 1) > table->capacity) {
-			_expand (table, 1);
+		neededCapacity = _gtableNeededCapacity (table->usage + 1, table->capacity);
+		
+		if (neededCapacity != table->capacity) {
+			_resize (table, neededCapacity);
 		}
 		
 		_gtableFindFreePos (table, hash, &index);
@@ -196,9 +224,6 @@ void gtableSetValue (gtable* table, gstring* name, void* value)
 	}
 	
 	_setEntry (&table->entries[index], hash, name, value);
-	
-	printf("index: ");printUlDec(index); printNl();
-	printf("usage: ");printUlDec(table->usage); printNl();
 }
 
 void* gtableGetValue (gtable* table, gstring* name)
@@ -212,4 +237,34 @@ void* gtableGetValue (gtable* table, gstring* name)
 	}
 
 	return 0;
+}
+
+garray* gtableGetKeys (gtable* table)
+{
+	garray* res;
+	guint i;
+	
+	res = garrayNew ();
+	
+	for (i = 0; i < table->capacity; i ++) {
+		if (table->entries[i].name)
+			garrayAppend (res, table->entries[i].name);
+	}
+	
+	return res;
+}
+
+garray* gtableGetValues (gtable* table)
+{
+	garray* res;
+	guint i;
+	
+	res = garrayNew ();
+	
+	for (i = 0; i < table->capacity; i ++) {
+		if (table->entries[i].name)
+			garrayAppend (res, table->entries[i].value);
+	}
+	
+	return res;
 }
