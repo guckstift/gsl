@@ -1,6 +1,8 @@
 #include "Object.h"
 #include "memory.h"
 
+Abstract gtObject;
+
 Object* ObjectNew ()
 {
 	Object* res;
@@ -13,6 +15,7 @@ Object* ObjectNew ()
 
 void ObjectInit (Object* obj)
 {
+	AbstractInit (&res->abstract, &gtObject);
 	gtableInit (&obj->table);
 }
 
