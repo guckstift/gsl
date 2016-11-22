@@ -5,6 +5,8 @@
 #include "math.h"
 #include "print.h"
 
+Base ObjectType[1];
+
 /* private */
 
 static void _initProp(Property* prop)
@@ -295,6 +297,7 @@ void ObjectInit(Object* obj)
 {
 	guint i;
 	
+	obj->type = ObjectType;
 	obj->length = OBJECT_MIN_CAPACITY;
 	obj->usage = 0;
 	obj->props = newvec(Property, obj->length);

@@ -15,6 +15,8 @@ typedef struct Array {
 	Base** elms;
 } Array;
 
+extern Base ArrayType[1];
+
 Array* ArrayNew();
 void ArrayAppend(Array* array, Base* elm);
 /* internals */

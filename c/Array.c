@@ -2,6 +2,8 @@
 #include "memory.h"
 #include "math.h"
 
+Base ArrayType[1];
+
 /* internals */
 
 /*
@@ -39,6 +41,7 @@ Array* ArrayNew()
 	guint i;
 	
 	res = newobj(Array);
+	res->type = ArrayType;
 	res->length = ARRAY_MIN_CAPACITY;
 	res->usage = 0;
 	res->elms = newvec(Base*, res->length);

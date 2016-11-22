@@ -16,6 +16,8 @@ typedef struct Object {
 	Property* props;
 } Object;
 
+extern Base ObjectType[1];
+
 #define OBJECT_MIN_CAPACITY    4
 #define OBJECT_MAX_USAGE_N     3
 #define OBJECT_MAX_USAGE_D     4
