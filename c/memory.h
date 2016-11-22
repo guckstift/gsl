@@ -21,5 +21,6 @@ void* grealloc(void* ptr, guint size);
 	((ptr) = (type*)grealloc((ptr), sizeof(type) * (count)))
 
 void gmcopy(void* dest, void* src, guint size);
+gbool gmequal(void* first, void* second, guint size);
 
 #endif

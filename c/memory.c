@@ -21,3 +21,8 @@ void gmcopy(void* dest, void* src, guint size)
 {
 	memcpy(dest, src, size);
 }
+
+gbool gmequal(void* first, void* second, guint size)
+{
+	return memcmp(first, second, size) == 0;
+}
