@@ -9,7 +9,7 @@ typedef struct String {
 	gchar chars[1];
 } String;
 
-extern Base StringType[1];
+extern Base stringType[1];
 
 #define INVALID_HASH MAX_UINT
 

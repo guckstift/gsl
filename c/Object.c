@@ -4,8 +4,10 @@
 #include "memory.h"
 #include "math.h"
 #include "print.h"
+#include "refcount.h"
+#include "numbertypes.h"
 
-Base ObjectType[1];
+Base objectType[1];
 
 /* private */
 
@@ -184,44 +186,61 @@ void ObjectDemo()
 	
 	obj = ObjectNew();
 	
-	ObjectSetValue(obj, StringFromCstr("null"), (void*)0);
+	ObjectSetValue(obj, StringFromCstr("null"), (Base*)IntNew(0));
 	ObjectPrintInfo(obj);
 
-	ObjectSetValue(obj, StringFromCstr("eins"), (void*)1);
+	ObjectSetValue(obj, StringFromCstr("eins"), (Base*)IntNew(1));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("zwei"), (void*)2);
+	ObjectSetValue(obj, StringFromCstr("zwei"), (Base*)IntNew(2));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("drei"), (void*)3);
+	ObjectSetValue(obj, StringFromCstr("drei"), (Base*)IntNew(3));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("vier"), (void*)4);
+	ObjectSetValue(obj, StringFromCstr("vier"), (Base*)IntNew(4));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("fuenf"), (void*)5);
+	ObjectSetValue(obj, StringFromCstr("fuenf"), (Base*)IntNew(5));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("sechs"), (void*)6);
+	ObjectSetValue(obj, StringFromCstr("sechs"), (Base*)IntNew(6));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("sieben"), (void*)7);
+	ObjectSetValue(obj, StringFromCstr("sieben"), (Base*)IntNew(7));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("acht"), (void*)8);
+	ObjectSetValue(obj, StringFromCstr("acht"), (Base*)IntNew(8));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("neun"), (void*)9);
+	ObjectSetValue(obj, StringFromCstr("neun"), (Base*)IntNew(9));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("zehn"), (void*)10);
+	ObjectSetValue(obj, StringFromCstr("zehn"), (Base*)IntNew(10));
 	ObjectPrintInfo(obj);
 
-	ObjectSetValue(obj, StringFromCstr("elf"), (void*)11);
+	ObjectSetValue(obj, StringFromCstr("elf"), (Base*)IntNew(11));
 	ObjectPrintInfo(obj);
 	
-	ObjectSetValue(obj, StringFromCstr("zwoelf"), (void*)12);
+	ObjectSetValue(obj, StringFromCstr("zwoelf"), (Base*)IntNew(12));
 	ObjectPrintInfo(obj);
+	
+	printf("===================\n--- Abruf\n");
+	
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("null")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("eins")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("zwei")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("drei")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("vier")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("fuenf")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("sechs")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("sieben")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("acht")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("neun")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("zehn")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("elf")))->value); printf(" ");
+	printUlDec(((Int*)ObjectGetValue(obj, StringFromCstr("zwoelf")))->value); printf(" ");
+	printNl();
 }
 
 void ObjectPrintInfo(Object* obj)
@@ -232,23 +251,6 @@ void ObjectPrintInfo(Object* obj)
 	String* key;
 	guint val;
 	
-	printf("===================\n--- Abruf\n");
-	
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("null"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("eins"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("zwei"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("drei"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("vier"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("fuenf"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("sechs"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("sieben"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("acht"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("neun"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("zehn"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("elf"))); printf(" ");
-	printUlDec((guint)ObjectGetValue(obj, StringFromCstr("zwoelf"))); printf(" ");
-	printNl();
-	
 	printf("--- Hashtable (%lu/%lu)\n", obj->usage, obj->length);
 	for (i=0; i<obj->length; i++) {
 		key = (String*)obj->props[i].name;
@@ -256,7 +258,7 @@ void ObjectPrintInfo(Object* obj)
 		if (key) {
 			printf("#%i : H = %lu ", i, StringHash(key));
 			printf("K = "); StringPrint(key);
-			printf(" V = %lu", val);
+			printf(" V = %lu", ((Int*)val)->value);
 		}
 		else {
 			printf("#%i", i);
@@ -275,7 +277,7 @@ void ObjectPrintInfo(Object* obj)
 	
 	printf("\n--- Value-Array\n");
 	for (i=0; i<vals->usage; i++) {
-		printf("%lu ", (guint)vals->elms[i]);
+		printf("%lu ", ((Int*)vals->elms[i])->value);
 	}
 	
 	printNl();
@@ -297,7 +299,7 @@ void ObjectInit(Object* obj)
 {
 	guint i;
 	
-	obj->type = ObjectType;
+	BaseInit(obj, objectType);
 	obj->length = OBJECT_MIN_CAPACITY;
 	obj->usage = 0;
 	obj->props = newvec(Property, obj->length);
@@ -310,6 +312,8 @@ void ObjectInit(Object* obj)
 void ObjectSetValue(Object* obj, String* name, Base* value)
 {
 	guint hash, index, neededCapacity;
+	String* oldName;
+	Base* oldValue;
 	
 	hash = StringHash(name);
 	
@@ -324,7 +328,13 @@ void ObjectSetValue(Object* obj, String* name, Base* value)
 		obj->usage ++;
 	}
 	
+	oldName = obj->props[index].name;
+	oldValue = obj->props[index].value;
 	_setProp(&obj->props[index], name, value);
+	incRefCount(name);
+	incRefCount(value);
+	decRefCount(oldName);
+	decRefCount(oldValue);
 }
 
 Base* ObjectGetValue(Object* obj, String* name)

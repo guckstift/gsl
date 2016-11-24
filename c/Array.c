@@ -1,8 +1,9 @@
 #include "Array.h"
 #include "memory.h"
 #include "math.h"
+#include "refcount.h"
 
-Base ArrayType[1];
+Base arrayType[1];
 
 /* internals */
 
@@ -41,7 +42,7 @@ Array* ArrayNew()
 	guint i;
 	
 	res = newobj(Array);
-	res->type = ArrayType;
+	BaseInit(res, arrayType);
 	res->length = ARRAY_MIN_CAPACITY;
 	res->usage = 0;
 	res->elms = newvec(Base*, res->length);
@@ -68,4 +69,5 @@ void ArrayAppend(Array* array, Base* elm)
 
 	array->elms[array->usage] = elm;
 	array->usage ++;
+	incRefCount(elm);
 }

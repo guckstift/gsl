@@ -4,7 +4,7 @@
 
 void* gmalloc(guint size)
 {
-	return malloc(size);
+	return calloc(size, 1);
 }
 
 void gfree(void* ptr)

@@ -37,4 +37,9 @@ typedef struct VarBase {
 	VarBase_HEAD
 } VarBase;
 
+#define BaseInit(obj, _type) { \
+	(obj)->refcount = 0; \
+	(obj)->type = (_type); \
+	}
+
 #endif

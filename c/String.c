@@ -3,7 +3,7 @@
 #include "String.h"
 #include "memory.h"
 
-Base StringType[1];
+Base stringType[1];
 
 static guint _cstrlen(char* cstr)
 {
@@ -12,8 +12,7 @@ static guint _cstrlen(char* cstr)
 
 void StringInit(String* str, guint length)
 {
-	str->refcount = 0;
-	str->type = StringType;
+	BaseInit(str, stringType);
 	str->length = length;
 	str->hash = INVALID_HASH;
 }
